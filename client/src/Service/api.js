@@ -28,3 +28,17 @@ export const deletePlayer = async (id) => {
 export const editPlayer = async (id, player) => {
     return await axios.put(`${playersUrl}/${id}`, player)
 }
+
+export const getTeams = async (id) => {
+    id = id || '';
+    return await axios.get(`${playersUrl}/allTeams/${id}`);
+}
+
+export const addTeam = async (team) => {
+    try {
+        return await axios.post(`${playersUrl}/addTeam`, team);    
+    } catch (error) {
+        console.log('Error while calling addPlayer api: ' , error);
+    }
+    
+}

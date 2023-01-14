@@ -1,6 +1,8 @@
-import react, { useState, useEffect } from 'react';
-import { Table, TableHead, TableCell, Paper, TableRow, TableBody, Button, styled } from '@mui/material'
-import { getPlayers, deletePlayer } from '../Service/api';
+import { useState, useEffect } from 'react';
+import { Table, TableHead, TableCell, TableRow, TableBody, Button, styled } from '@mui/material'
+
+import { getTeams } from '../Service/api';
+
 import { Link } from 'react-router-dom';
 
 const StyledTable = styled(Table)`
@@ -22,22 +24,17 @@ const TRow = styled(TableRow)`
     }
 `;
 
-const AllPlayers = () => {
-    const [players, setPlayers] = useState([]);
+const AllTeams = () => {
+    const [teams, setTeams] = useState([]);
     
     useEffect(() => {
-        getAllPlayers();
+        getAllTeams();
     }, []);
 
-    const deletePlayerData = async (id) => {
-        await deletePlayer(id);
-        getAllPlayers();
-    }
-
-    const getAllPlayers = async () => {
-        let response = await getPlayers();
+    const getAllTeams = async () => {
+        let response = await getTeams();
         //let response = await getEligiblePlayers();
-        setPlayers(response.data);
+        setTeams(response.data);
         //console.log(players);
     }
 
@@ -56,7 +53,7 @@ const AllPlayers = () => {
                 </THead>
             </TableHead>
             <TableBody>
-                {players.map((player) => (
+                {teams.map((team) => team.teamList.map((player)=> (
                     <TRow key={player.id}>
                         <TableCell>{player._id}</TableCell> {/* change it to user.id to use JSON Server */}
                         <TableCell>{player.name}</TableCell>
@@ -64,17 +61,16 @@ const AllPlayers = () => {
                         <TableCell>{player.year}</TableCell>
                         <TableCell>{player.speciality}</TableCell>
                         <TableCell>{player.wk}</TableCell>
-                        <TableCell>{player.registered}</TableCell>
-                        <TableCell>{player.soldto}</TableCell>
+                        <TableCell>{player.point}</TableCell>
                         <TableCell>
                             <Button color="primary" variant="contained" style={{marginRight:10}} component={Link} to={`/edit/${player._id}`}>Edit</Button> {/* change it to user.id to use JSON Server */}
                             <Button color="secondary" variant="contained" onClick={() => deletePlayerData(player._id)}>Delete</Button> {/* change it to user.id to use JSON Server */}
                         </TableCell>
                     </TRow>
-                ))}
+                )))}
             </TableBody>
         </StyledTable>
     )
 }
 
-export default AllPlayers;
+export default AllTeams;

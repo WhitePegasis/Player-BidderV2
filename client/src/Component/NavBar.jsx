@@ -22,6 +22,7 @@ const NavBar = () => {
                 <Tabs to="./" exact>MCL</Tabs>
                 <Tabs to="all" exact>All Players</Tabs>
                 <Tabs to="add" exact>Add Player</Tabs>
+                <Tabs to="addTeam" exact>Add Team</Tabs>
                 <Tabs to="eligible" exact>Eligible Players</Tabs>
             </Toolbar>
         </Header>
