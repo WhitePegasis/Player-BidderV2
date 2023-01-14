@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Table, TableHead, TableCell, Paper, TableRow, TableBody, Button, styled, Grid} from '@mui/material'
-import { getEligiblePlayers, deletePlayer } from '../Service/api';
+import { getEligiblePlayers, editTeam , getTeams} from '../Service/api';
 import { Link } from 'react-router-dom';
 import { Container } from '@mui/system';
 
@@ -23,7 +23,7 @@ const TRow = styled(TableRow)`
     }
 `;
 
-const initialValue = {
+const initialPlayerValue = {
     name: '',
     dept: '',
     year: '',
@@ -33,25 +33,54 @@ const initialValue = {
     soldto: 'Unsold'
 }
 
+const initialTeamValue = {
+  name: '',
+  pointsUsed: 0,
+  playerList: [{
+      name: '',
+      dept: '',
+      year: '',
+      speciality: '',
+      wk: '',
+      point: 0,
+  }],
+}
+
+
 const AllEligiblePlayers = () => {
 
-    let playerName = "Player Name";
     const [idx, setIdx] = useState(0);
-    const [players, setPlayers] = useState(initialValue);
+    const [players, setPlayers] = useState();
+    const [teams, setTeams] = useState();
     
     useEffect(() => {
         getAllPlayers();
-    }, [players]);
+         getAllTeams();
+    }, []);
 
     const getAllPlayers = async () => {
         try {
             let response = await getEligiblePlayers();
+
             setPlayers(response.data);
         } catch (error) {
             console.log("getAllPlayers error: ", error);
         }
         
     }
+
+    const getAllTeams = async () => {
+      try {
+          let response2 = await getTeams();
+
+          setTeams(response2.data);
+          console.log(response2.data);
+
+      } catch (error) {
+          console.log("getAllTeams error: ", error);
+      }
+      
+  }
 
     const clickedStartBtn = ()=>{
 
@@ -125,6 +154,7 @@ const AllEligiblePlayers = () => {
           }
       } // end of update button functionality
 
+      // on rest button click
       const resetBtnClick = ()=>{
         if(window.confirm("Are you sure you want to reset?")){
           bidValue.innerHTML="0000";
@@ -132,9 +162,53 @@ const AllEligiblePlayers = () => {
           newBidValue.value="";
           newBidderName.value="select";
         }
+      } //end reset button functionality
+
+
+      const submitButtonClick = async ()=>{
+        if(window.confirm("Are you sure you want to submit?")){
+          try {
+            
+            const newTeamValue = {
+              name: '',
+              pointsUsed: 0,
+              playerList: [],
+          }
+
+            const soldPlayerDetails = {
+                  name: '',
+                  dept: '',
+                  year: '',
+                  speciality: '',
+                  wk: '',
+                  point: 0,
+            }
+
+            const pointsUsed = parseInt(bidValue.innerHTML);
+            soldPlayerDetails.name = players[idx].name;
+            soldPlayerDetails.dept = players[idx].dept;
+            soldPlayerDetails.year = players[idx].year;
+            soldPlayerDetails.speciality = players[idx].speciality;
+            soldPlayerDetails.wk = players[idx].wk;
+            soldPlayerDetails.point = parseInt(pointsUsed);
+
+            const teamId = parseInt(newBidderName.value);
+            newTeamValue.name= teams[0].name;
+            newTeamValue.pointsUsed=teams[0].pointsUsed + pointsUsed;
+            newTeamValue.playerList = teams[0].playerList;
+            newTeamValue.playerList.push(soldPlayerDetails);
+
+            console.log("Player Sold: ", newTeamValue);
+            
+            await editTeam(0,newTeamValue);
+            await getAllPlayers();
+            await getAllTeams();
+
+          } catch (error) {
+            console.log("Error in submitButtonClick: ",error);
+          }
+        }
       }
-
-
 
     return (
 
@@ -202,7 +276,7 @@ const AllEligiblePlayers = () => {
                 <img className="center-cropped" src="default-image.png" onerror="this.src='default-image.png'" style={{width: '100%', height: '400px'}} alt="Avatar" id="player-image" onerror="this.src=image-not-found.jpg" />
                 <div className="w3-display-bottomleft w3-container w3-text-black">
                   {/* <h2 style={{color: 'aliceblue'}} id="player-name1">Player Name</h2> */}
-                  <h2 style={{color: 'aliceblue'}} id="player-name1">{playerName}</h2>
+                  <h2 style={{color: 'aliceblue'}} id="player-name1">Player Name</h2>
                 </div>
               </div>
               <div className="w3-container mt-3">
@@ -212,10 +286,10 @@ const AllEligiblePlayers = () => {
                 <hr />
                 <p className="w3-large"><b><i className="fa fa-asterisk fa-fw w3-margin-right w3-text-teal" />Skills</b></p>
                 <div id="skill-div">
-                  <p className="skills w3-teal" id="speciality"> Speciality </p>
+                  <b><p className="skills w3-teal" id="speciality"> Speciality </p></b>
                 </div>
                 <div id="skill-wk">
-                  <p className="mt-3 skills w3-teal">Wicket Keeper: <span id='wk'></span></p>
+                  <b><p className="mt-3 skills w3-teal">Wicket Keeper: <span id='wk'></span></p></b>
                 </div>
                 <br />
               </div>
@@ -266,7 +340,7 @@ const AllEligiblePlayers = () => {
                 </div>
                 </div>
                 <div className="w3-twothird">
-                <button id="submit" type="button" className="btn btn-primary btn-rounded">Submit</button>
+                <button id="submit" onClick={submitButtonClick} type="button" className="btn btn-primary btn-rounded">Submit</button>
                 </div>
                 {/* End Right Column */}
             </div>

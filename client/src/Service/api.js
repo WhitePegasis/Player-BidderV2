@@ -31,7 +31,8 @@ export const editPlayer = async (id, player) => {
 
 export const getTeams = async (id) => {
     id = id || '';
-    return await axios.get(`${playersUrl}/allTeams/${id}`);
+    return await axios.get(`${playersUrl}/allTeams`);
+    // return await axios.get(`${playersUrl}/allTeams/${id}`);
 }
 
 export const addTeam = async (team) => {
@@ -41,4 +42,8 @@ export const addTeam = async (team) => {
         console.log('Error while calling addPlayer api: ' , error);
     }
     
+}
+
+export const editTeam =  async(id, team)=>{
+    return await axios.put(`${playersUrl}/editTeam/${id}`, team)
 }

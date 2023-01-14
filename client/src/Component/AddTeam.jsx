@@ -7,11 +7,11 @@ const initialValue = {
     name: '',
     pointsUsed: 0,
     playerList: [{
-        name: '',
-        dept: '',
-        year: '',
-        speciality: '',
-        wk: '',
+        name: 'NULL',
+        dept: 'NULL',
+        year: 'NULL',
+        speciality: 'NULL',
+        wk: 'NULL',
         point: 0,
     }],
 }

@@ -12,6 +12,7 @@ export const getUsers = async (request, response) => {
 
 // // Get eligible users
 export const getEligibleUsers = async (request, response) => {
+    
     try{
         const users = await User.find({
             registered: 'Yes',
