@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 // username: souravpradhanfake , password: souravpradhanfake
 const Connection = async (username, password) => {
-    const URL = `mongodb+srv://${username}:${password}@crud-app.wlkyzwa.mongodb.net/?retryWrites=true&w=majority`;
+    const URL = `mongodb+srv://${username}:${password}@player-bidder.3inkwan.mongodb.net/?retryWrites=true&w=majority`;
     try {
         // 1 - Current URL string parser is deprecated, and will be removed in a future version. 
         // 2 - Current Server Discovery and Monitoring engine is deprecated, and will be removed in a future version.

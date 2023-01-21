@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Table, TableHead, TableCell, Paper, TableRow, TableBody, Button, styled, Grid} from '@mui/material'
 import { getEligiblePlayers, editTeam , getTeams} from '../Service/api';
-import { Link } from 'react-router-dom';
-import { Container } from '@mui/system';
+import { editPlayer } from '../Service/api';
 
 const StyledTable = styled(Table)`
     width: 90%;
@@ -23,33 +22,18 @@ const TRow = styled(TableRow)`
     }
 `;
 
-const initialPlayerValue = {
-    name: '',
-    dept: '',
-    year: '',
-    speciality: '',
-    wk: '',
-    registered: 'No',
-    soldto: 'Unsold'
-}
-
-const initialTeamValue = {
-  name: '',
-  pointsUsed: 0,
-  playerList: [{
-      name: '',
-      dept: '',
-      year: '',
-      speciality: '',
-      wk: '',
-      point: 0,
-  }],
-}
-
 
 const AllEligiblePlayers = () => {
 
-    const [idx, setIdx] = useState(0);
+    let playerIdx=0;
+    let teamIdx = -1;
+    const maxPoint = 2000;
+    let currentBidderTeam = {
+      name: '',
+      pointsUsed: 0,
+      playerList: [],
+  }
+
     const [players, setPlayers] = useState();
     const [teams, setTeams] = useState();
     
@@ -63,6 +47,8 @@ const AllEligiblePlayers = () => {
             let response = await getEligiblePlayers();
 
             setPlayers(response.data);
+
+            console.log("Players fetched!");
         } catch (error) {
             console.log("getAllPlayers error: ", error);
         }
@@ -74,6 +60,7 @@ const AllEligiblePlayers = () => {
           let response2 = await getTeams();
 
           setTeams(response2.data);
+          console.log("Teams fetched!");
           console.log(response2.data);
 
       } catch (error) {
@@ -90,18 +77,23 @@ const AllEligiblePlayers = () => {
           alert("No more players");
         }
         else if(window.confirm('Do you want to start the bidding?')){
+
+          playerIdx = Math.floor(Math.random() * playersCount); // generating random index 
+
+          console.log('Total players count : ', playersCount );
+          console.log('Random index: ', playerIdx);
           const name = document.querySelectorAll('#player-name1')[0];
           const name2=document.getElementById("player-name2");
           const year = document.querySelectorAll('#year')[0];
           const dept = document.querySelectorAll('#dept')[0];
           const speciality = document.querySelectorAll('#speciality')[0];
           const wk = document.querySelectorAll('#wk')[0];
-          name.innerHTML = `${players[0].name}`;
-          name2.innerHTML = `${players[0].name}`;
-          year.innerHTML = `${players[0].year}`;
-          dept.innerHTML = `${players[0].dept}`;
-          speciality.innerHTML = `${players[0].speciality}`;
-          wk.innerHTML = `${players[0].wk}`;
+          name.innerHTML = `${players[playerIdx].name}`;
+          name2.innerHTML = `${players[playerIdx].name}`;
+          year.innerHTML = `${players[playerIdx].year}`;
+          dept.innerHTML = `${players[playerIdx].dept}`;
+          speciality.innerHTML = `${players[playerIdx].speciality}`;
+          wk.innerHTML = `${players[playerIdx].wk}`;
         }
     }
 
@@ -110,41 +102,45 @@ const AllEligiblePlayers = () => {
 
         const bidValue=document.getElementById("bid-value");
         const bidderName=document.getElementById("bidder-name");
-        const bidButton=document.getElementById("bid-button");
         const newBidValue=document.getElementById("new-bid-value");
         const newBidderName=document.getElementById("new-bidder-name");
         const teamNames=["RR","CSK","KKR","DC","RCB","SRH"];
 
         // on update button click
-        let bidderIndex=0;
+        //let bidderIndex=0;
         const bidButtonClick= ()=>{
 
           try {
-            const val=newBidValue.value;
+            const newBidVal=newBidValue.value;
             const currIdx=parseInt(newBidderName.value);
+            const tempBidderTeam = teams[currIdx];
             const bidder=teamNames[currIdx];
             //const bidder=newBidderName.value;
-            //const currPoint=parseInt(teamPointArr[currIdx])+parseInt(val);
-            if(val==''){
+            const remainingPoint = maxPoint - parseInt(tempBidderTeam.pointsUsed);
+            const newPoint = parseInt(tempBidderTeam.pointsUsed) + parseInt(newBidVal);
+
+            if(newBidVal==''){
               alert('Bid Value Field Empty!')
             }
             else if(bidder=='select'){
               alert('Select the Bidder!')
             }
-            // else if(parseInt(val) < parseint(bidvalue.innertext)){ 
-            //   alert("current bid value less than previous bid!"); 
-            // } 
-            // else if(currpoint> maxPoint){
-            //   console.log(teamPointArr[currIdx],val,currIdx);
-            //   alert("Not enough point!")
-            // }
+            else if(parseInt(newBidVal) < parseInt(bidValue.innerText)){ 
+              alert("current bid value less than previous bid!"); 
+            } 
+            else if(newPoint > maxPoint){
+              alert("Not enough point!, Team only has "+ remainingPoint + " point remaining.");
+            }
             else{
-              bidderIndex=parseInt(newBidderName.value);
+              //bidderIndex=parseInt(newBidderName.value);
               //console.log(bidderIndex);
-              bidValue.innerHTML=val;
+              bidValue.innerHTML=newBidVal;
               bidderName.innerHTML=bidder;
               newBidValue.value="";
               newBidderName.value="select";
+
+              currentBidderTeam = teams[currIdx];
+              teamIdx = currIdx;
             }
           } catch (error) {
             
@@ -166,14 +162,27 @@ const AllEligiblePlayers = () => {
 
 
       const submitButtonClick = async ()=>{
-        if(window.confirm("Are you sure you want to submit?")){
+        if(teamIdx < 0){
+          alert("Update the bidding data before submit!");
+        }
+        else if(window.confirm("Are you sure you want to submit?")){
           try {
             
             const newTeamValue = {
               name: '',
               pointsUsed: 0,
               playerList: [],
-          }
+            }
+
+            let newPlayervalue = {
+              name: '',
+              dept: '',
+              year: '',
+              speciality: '',
+              wk: '',
+              registered: '',
+              soldto: ''
+            }
 
             const soldPlayerDetails = {
                   name: '',
@@ -185,24 +194,34 @@ const AllEligiblePlayers = () => {
             }
 
             const pointsUsed = parseInt(bidValue.innerHTML);
-            soldPlayerDetails.name = players[idx].name;
-            soldPlayerDetails.dept = players[idx].dept;
-            soldPlayerDetails.year = players[idx].year;
-            soldPlayerDetails.speciality = players[idx].speciality;
-            soldPlayerDetails.wk = players[idx].wk;
+            soldPlayerDetails.name = players[playerIdx].name;
+            soldPlayerDetails.dept = players[playerIdx].dept;
+            soldPlayerDetails.year = players[playerIdx].year;
+            soldPlayerDetails.speciality = players[playerIdx].speciality;
+            soldPlayerDetails.wk = players[playerIdx].wk;
             soldPlayerDetails.point = parseInt(pointsUsed);
-
-            const teamId = parseInt(newBidderName.value);
-            newTeamValue.name= teams[0].name;
-            newTeamValue.pointsUsed=teams[0].pointsUsed + pointsUsed;
-            newTeamValue.playerList = teams[0].playerList;
+            
+            //const teamIdx = parseInt(newBidderName.value);
+            newTeamValue.name= teams[teamIdx].name;
+            newTeamValue.pointsUsed=teams[teamIdx].pointsUsed + pointsUsed;
+            newTeamValue.playerList = teams[teamIdx].playerList;
             newTeamValue.playerList.push(soldPlayerDetails);
 
             console.log("Player Sold: ", newTeamValue);
             
-            await editTeam(0,newTeamValue);
+            await editTeam(teamIdx,newTeamValue);
             await getAllPlayers();
             await getAllTeams();
+
+            newPlayervalue = players[playerIdx];
+            newPlayervalue.soldto = newTeamValue.name;
+
+            await editPlayer(newPlayervalue._id, newPlayervalue);
+            
+            alert(newPlayervalue.name + " got sold to "+ newTeamValue.name+ " for "+ pointsUsed);
+
+            window.location.reload(false);
+            
 
           } catch (error) {
             console.log("Error in submitButtonClick: ",error);
@@ -216,25 +235,13 @@ const AllEligiblePlayers = () => {
 
             {/*Navbar */}
       <nav className="mb-1 navbar navbar-expand-lg navbar-dark default-color" id="nav">
-        <a className="navbar-brand" href="#">MCL</a>
-        <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent-333" aria-controls="navbarSupportedContent-333" aria-expanded="false" aria-label="Toggle navigation">
-          <span className="navbar-toggler-icon" />
-        </button>
+        
         <div className="collapse navbar-collapse" id="navbarSupportedContent-333">
           <ul className="navbar-nav mr-auto">
             <li className="nav-item active">
               <a className="nav-link" href="#" id="start" onClick={() => clickedStartBtn()}>Start Bidding
                 {/* <span class="sr-only">(current)</span>  */}
               </a>
-            </li>
-            <li className="nav-item dropdown">
-              <a className="nav-link dropdown-toggle" id="navbarDropdownMenuLink-333" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Sheets
-              </a>
-              <div className="dropdown-menu dropdown-default" aria-labelledby="navbarDropdownMenuLink-333">
-                <a className="dropdown-item" href="https://docs.google.com/spreadsheets/d/1YbGjVNyBVm14jz-FsrWaziq7EuRvUoX8a8PFuGkaLJo/edit#gid=0" target="_blank">Input Sheet</a>
-                <a className="dropdown-item" href="https://docs.google.com/spreadsheets/d/1Gr6PnoMYJn0dQHQ0nPuLSg5xIsXL0qxgZx7sNKPDOIU/edit?usp=sharing" target="_blank">Output Sheet</a>
-                <a className="dropdown-item" href="https://docs.google.com/spreadsheets/d/1im8fhoFTRF4te0m2jAiOxzYLfzLRhnDgbBwoFLERD9U/edit#gid=0" target="_blank">Points Sheet</a>
-              </div>
             </li>
           </ul>
           <ul className="navbar-nav ml-auto nav-flex-icons">

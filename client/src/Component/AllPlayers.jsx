@@ -38,7 +38,7 @@ const AllPlayers = () => {
         let response = await getPlayers();
         //let response = await getEligiblePlayers();
         setPlayers(response.data);
-        //console.log(players);
+        console.log(players);
     }
 
     return (

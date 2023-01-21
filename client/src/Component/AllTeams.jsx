@@ -26,50 +26,62 @@ const TRow = styled(TableRow)`
 
 const AllTeams = () => {
     const [teams, setTeams] = useState([]);
-    
+    let playerIdx=0;
     useEffect(() => {
         getAllTeams();
     }, []);
 
     const getAllTeams = async () => {
+        
         let response = await getTeams();
         //let response = await getEligiblePlayers();
         setTeams(response.data);
-        //console.log(players);
+        console.log(teams);
+        console.log(response.data);
     }
 
     return (
-        <StyledTable>
-            <TableHead>
-                <THead>
-                    <TableCell>Id</TableCell>
-                    <TableCell>Name</TableCell>
-                    <TableCell>Department</TableCell>
-                    <TableCell>Year</TableCell>
-                    <TableCell>Speciality</TableCell>
-                    <TableCell>WK</TableCell>
-                    <TableCell>Registered</TableCell>
-                    <TableCell>Sold To</TableCell>
-                </THead>
-            </TableHead>
-            <TableBody>
-                {teams.map((team) => team.teamList.map((player)=> (
-                    <TRow key={player.id}>
-                        <TableCell>{player._id}</TableCell> {/* change it to user.id to use JSON Server */}
-                        <TableCell>{player.name}</TableCell>
-                        <TableCell>{player.dept}</TableCell>
-                        <TableCell>{player.year}</TableCell>
-                        <TableCell>{player.speciality}</TableCell>
-                        <TableCell>{player.wk}</TableCell>
-                        <TableCell>{player.point}</TableCell>
-                        <TableCell>
-                            <Button color="primary" variant="contained" style={{marginRight:10}} component={Link} to={`/edit/${player._id}`}>Edit</Button> {/* change it to user.id to use JSON Server */}
-                            <Button color="secondary" variant="contained" onClick={() => deletePlayerData(player._id)}>Delete</Button> {/* change it to user.id to use JSON Server */}
-                        </TableCell>
-                    </TRow>
-                )))}
-            </TableBody>
-        </StyledTable>
+        <>
+            {teams.map((team) =>(
+                <StyledTable>
+                <TableHead>
+                    <THead>
+                        <TableCell>{team.name}</TableCell>
+                        <TableCell>S.No</TableCell>
+                        <TableCell>Name</TableCell>
+                        <TableCell>Department</TableCell>
+                        <TableCell>Year</TableCell>
+                        <TableCell>Speciality</TableCell>
+                        <TableCell>WK</TableCell>
+                        <TableCell>Bid-Point</TableCell>
+                        <TableCell>P.U: {team.pointsUsed}</TableCell>
+                    </THead>
+                </TableHead>
+                <TableBody>
+                
+                {
+                    team.playerList.map((player, index)=>(
+                        
+                        (
+                            <TRow key={player.id}>
+                                <TableCell>{}</TableCell> {/* change it to user.id to use JSON Server */}
+                                <TableCell>{index}</TableCell>
+                                <TableCell>{player.name}</TableCell>
+                                <TableCell>{player.dept}</TableCell>
+                                <TableCell>{player.year}</TableCell>
+                                <TableCell>{player.speciality}</TableCell>
+                                <TableCell>{player.wk}</TableCell>
+                                <TableCell>{player.point}</TableCell>
+                            </TRow>
+                        )
+                    ))
+                }
+                
+                </TableBody>
+                </StyledTable>
+            ))}
+                        
+        </>  
     )
 }
 

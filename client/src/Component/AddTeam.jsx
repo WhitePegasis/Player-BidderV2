@@ -6,14 +6,7 @@ import { useNavigate } from 'react-router-dom';
 const initialValue = {
     name: '',
     pointsUsed: 0,
-    playerList: [{
-        name: 'NULL',
-        dept: 'NULL',
-        year: 'NULL',
-        speciality: 'NULL',
-        wk: 'NULL',
-        point: 0,
-    }],
+    playerList: [],
 }
 
 const Container = styled(FormGroup)`
@@ -26,16 +19,22 @@ const Container = styled(FormGroup)`
 const AddTeam = () => {
     const [team, setTeam] = useState(initialValue);
     const { name} = team;
-    
-    // let navigate = useNavigate();
+    const inputLabel =document.getElementById('inputLabel');
+    let navigate = useNavigate();
 
     const onValueChange = (e) => {
         setTeam({...team, [e.target.name]: e.target.value})
     }
 
     const addTeamDetails = async() => {
-        await addTeam(team);
-        // navigate('/all');
+        try {
+            await addTeam(team);
+            alert("Team added successfully!");
+            inputLabel.innerHTML='';
+        } catch (error) {
+            alert("Network error: Couldn't add the team!");
+            console.log("Couldn't add team: ", error);
+        }
     }
 
     return (
@@ -43,7 +42,7 @@ const AddTeam = () => {
             <Typography variant="h4">Add Team</Typography>
 
             <FormControl>
-                <InputLabel htmlFor="my-input">Name</InputLabel>
+                <InputLabel id='inputLabel' htmlFor="my-input">Name</InputLabel>
                 <Input onChange={(e) => onValueChange(e)} name='name' value={name} id="my-input" />
             </FormControl>
 
